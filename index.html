@@ -65,7 +65,7 @@ padding:20px;
 table{
 width:100%;
 border-collapse:collapse;
-min-width:1200px;
+min-width:1300px;
 }
 
 th{
@@ -113,6 +113,7 @@ border-radius:10px;
 cursor:pointer;
 font-weight:700;
 margin:3px;
+font-size:13px;
 }
 
 .btn-paid{
@@ -141,6 +142,10 @@ display:inline-block;
 text-align:center;
 padding:40px;
 color:#f6c453;
+}
+
+.nama{
+font-weight:700;
 }
 
 </style>
@@ -190,7 +195,7 @@ onkeyup="filterPeserta()">
 <th>BIB</th>
 <th>Nama</th>
 <th>Kategori</th>
-<th>WA</th>
+<th>WhatsApp</th>
 
 <th>Payment</th>
 <th>RPC</th>
@@ -219,10 +224,14 @@ onkeyup="filterPeserta()">
 const WEBAPP_URL =
 "https://script.google.com/macros/s/AKfycbwr5NReGwYtYWt7hvx4Kw_LwAEZ2d0hVj3WGUPxfYzDXfFO8tno8w-PBO026at7ZNAcaw/exec";
 
+// ======================================
+// DATA GLOBAL
+// ======================================
+
 let pesertaData = [];
 
 // ======================================
-// LOAD DATA
+// LOAD PESERTA
 // ======================================
 
 async function loadPeserta(){
@@ -255,7 +264,9 @@ renderTable(pesertaData);
 
 }catch(err){
 
-alert(err.message);
+alert("ERROR : " + err.message);
+
+console.log(err);
 
 }
 
@@ -274,41 +285,100 @@ tbody.innerHTML = "";
 
 data.reverse().forEach(item=>{
 
-let wa = item["Nomor WA"] || "";
+// ======================================
+// FORMAT WA
+// ======================================
+
+let wa =
+String(item["Nomor WA"] || "");
+
+wa = wa.replace(/\s/g,'');
 
 if(wa.startsWith("0")){
 wa = "62" + wa.substring(1);
 }
 
+// ======================================
+// STATUS STYLE
+// ======================================
+
+const paymentClass =
+item["Payment Status"] === "PAID"
+? "paid"
+: "pending";
+
+const rpcClass =
+item["RPC Status"] === "DONE"
+? "done"
+: "pending";
+
+const checkinClass =
+item["Check-In Status"] === "DONE"
+? "done"
+: "pending";
+
+// ======================================
+// PESAN WA
+// ======================================
+
+const waText =
+encodeURIComponent(
+
+`Halo ${item["Nama Lengkap"]},
+
+Pembayaran RUN FOR YOUR LIFE 2026 telah tervalidasi ✅
+
+Register ID :
+${item["Register ID"]}
+
+BIB :
+${item["BIB Number"]}
+
+Terima kasih 🙏`
+
+);
+
+// ======================================
+// TABLE ROW
+// ======================================
+
 tbody.innerHTML += `
 
 <tr>
 
-<td>${item["Register ID"]}</td>
-
-<td>${item["BIB Number"]}</td>
-
-<td>${item["Nama Lengkap"]}</td>
-
-<td>${item["Kategori"]}</td>
+<td>
+${item["Register ID"] || "-"}
+</td>
 
 <td>
-<a
-href="https://wa.me/${wa}"
-target="_blank"
-class="btn btn-wa">
-WhatsApp
-</a>
+${item["BIB Number"] || "-"}
+</td>
+
+<td class="nama">
+${item["Nama Lengkap"] || "-"}
+</td>
+
+<td>
+${item["Kategori"] || "-"}
 </td>
 
 <td>
 
-<span class="status ${
-item["Payment Status"] == "PAID"
-? "paid"
-: "pending"
-}">
-${item["Payment Status"]}
+<a
+href="https://wa.me/${wa}"
+target="_blank"
+class="btn btn-wa">
+
+WhatsApp
+
+</a>
+
+</td>
+
+<td>
+
+<span class="status ${paymentClass}">
+${item["Payment Status"] || "PENDING"}
 </span>
 
 <br>
@@ -321,19 +391,17 @@ updateStatus(
 'Payment Status',
 'PAID'
 )">
+
 VALIDASI
+
 </button>
 
 </td>
 
 <td>
 
-<span class="status ${
-item["RPC Status"] == "DONE"
-? "done"
-: "pending"
-}">
-${item["RPC Status"]}
+<span class="status ${rpcClass}">
+${item["RPC Status"] || "PENDING"}
 </span>
 
 <br>
@@ -346,19 +414,17 @@ updateStatus(
 'RPC Status',
 'DONE'
 )">
+
 DONE
+
 </button>
 
 </td>
 
 <td>
 
-<span class="status ${
-item["Check-In Status"] == "DONE"
-? "done"
-: "pending"
-}">
-${item["Check-In Status"]}
+<span class="status ${checkinClass}">
+${item["Check-In Status"] || "PENDING"}
 </span>
 
 <br>
@@ -371,7 +437,9 @@ updateStatus(
 'Check-In Status',
 'DONE'
 )">
+
 CHECK-IN
+
 </button>
 
 </td>
@@ -379,16 +447,7 @@ CHECK-IN
 <td>
 
 <a
-href="https://wa.me/${wa}?text=${encodeURIComponent(
-`Halo ${item["Nama Lengkap"]},
-
-Pembayaran RUN FOR YOUR LIFE 2026 telah tervalidasi ✅
-
-Register ID:
-${item["Register ID"]}
-
-Terima kasih 🙏`
-)}"
+href="https://wa.me/${wa}?text=${waText}"
 target="_blank"
 class="btn btn-wa">
 
@@ -444,14 +503,16 @@ loadPeserta();
 
 }catch(err){
 
-alert(err.message);
+alert("ERROR : " + err.message);
+
+console.log(err);
 
 }
 
 }
 
 // ======================================
-// FILTER
+// FILTER PESERTA
 // ======================================
 
 function filterPeserta(){
@@ -464,19 +525,19 @@ document.getElementById("search")
 const filtered =
 pesertaData.filter(item =>
 
-(item["Nama Lengkap"] || "")
+String(item["Nama Lengkap"] || "")
 .toLowerCase()
 .includes(keyword)
 
 ||
 
-(item["Register ID"] || "")
+String(item["Register ID"] || "")
 .toLowerCase()
 .includes(keyword)
 
 ||
 
-(item["BIB Number"] || "")
+String(item["BIB Number"] || "")
 .toLowerCase()
 .includes(keyword)
 
