@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ADMIN DASHBOARD RFYL26</title>
+<title>ADMIN DASHBOARD RFYL 2026</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -34,46 +34,40 @@ background:#0d2347;
 padding:25px;
 border-radius:24px;
 margin-bottom:25px;
+box-shadow:0 0 40px rgba(0,0,0,0.3);
 }
 
 .header h1{
 color:#f6c453;
+font-size:32px;
 margin-bottom:10px;
 }
 
-.search-box{
-margin-top:20px;
+.header p{
+color:#ccc;
 }
 
-.search-box input{
-width:100%;
-padding:16px;
-border:none;
-border-radius:14px;
-background:#132f5e;
-color:white;
-font-size:16px;
-}
-
-.table-wrap{
-overflow:auto;
+.card{
 background:#0d2347;
+padding:25px;
 border-radius:24px;
-padding:20px;
+box-shadow:0 0 40px rgba(0,0,0,0.3);
+overflow:auto;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-min-width:1300px;
+margin-top:20px;
+min-width:1200px;
 }
 
 th{
 background:#132f5e;
-padding:14px;
+padding:15px;
+font-size:14px;
 text-align:left;
 color:#f6c453;
-font-size:14px;
 }
 
 td{
@@ -84,36 +78,42 @@ vertical-align:middle;
 }
 
 .status{
-padding:8px 12px;
-border-radius:10px;
-font-size:13px;
+padding:7px 14px;
+border-radius:999px;
+font-size:12px;
 font-weight:700;
 display:inline-block;
 }
 
 .paid{
-background:#10391e;
+background:#123d24;
 color:#6effa7;
 }
 
 .pending{
-background:#4d3908;
-color:#ffcc66;
+background:#4b3909;
+color:#ffd56a;
 }
 
 .done{
-background:#10391e;
+background:#123d24;
 color:#6effa7;
 }
 
 .btn{
-border:none;
 padding:10px 14px;
-border-radius:10px;
-cursor:pointer;
-font-weight:700;
-margin:3px;
+border:none;
+border-radius:12px;
 font-size:13px;
+font-weight:700;
+cursor:pointer;
+margin-bottom:6px;
+width:100%;
+transition:0.2s;
+}
+
+.btn:hover{
+transform:scale(1.03);
 }
 
 .btn-paid{
@@ -122,8 +122,8 @@ color:#06152d;
 }
 
 .btn-rpc{
-background:#6ec6ff;
-color:#06152d;
+background:#00c2ff;
+color:white;
 }
 
 .btn-checkin{
@@ -134,18 +134,93 @@ color:#06152d;
 .btn-wa{
 background:#25D366;
 color:white;
-text-decoration:none;
-display:inline-block;
 }
 
 .loading{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+z-index:9999;
+justify-content:center;
+align-items:center;
+backdrop-filter:blur(4px);
+}
+
+.loading-box{
+background:#0d2347;
+padding:30px;
+border-radius:24px;
 text-align:center;
-padding:40px;
+width:280px;
+}
+
+.spinner{
+width:60px;
+height:60px;
+border:6px solid rgba(255,255,255,0.1);
+border-top:6px solid #f6c453;
+border-radius:50%;
+margin:auto;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+100%{
+transform:rotate(360deg);
+}
+}
+
+.loading-text{
+margin-top:20px;
+font-size:16px;
+color:#f6c453;
+font-weight:600;
+}
+
+.search-box{
+margin-top:20px;
+}
+
+.search-box input{
+width:100%;
+padding:15px;
+border:none;
+border-radius:14px;
+background:#132f5e;
+color:white;
+font-size:15px;
+}
+
+.total-box{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+margin-bottom:25px;
+}
+
+.stat{
+background:#132f5e;
+padding:20px;
+border-radius:20px;
+text-align:center;
+}
+
+.stat h2{
+font-size:30px;
+margin-top:10px;
 color:#f6c453;
 }
 
-.nama{
-font-weight:700;
+@media(max-width:900px){
+
+.total-box{
+grid-template-columns:1fr 1fr;
+}
+
 }
 
 </style>
@@ -159,57 +234,90 @@ font-weight:700;
 <div class="header">
 
 <h1>
-🏃 ADMIN DASHBOARD RFYL26
+🏃 ADMIN DASHBOARD RFYL 2026
 </h1>
 
 <p>
-Monitoring peserta, validasi pembayaran,
-RPC, dan Check-in
+Validasi pembayaran, racepack, check-in peserta
 </p>
+
+</div>
+
+<div class="total-box">
+
+<div class="stat">
+<div>Total Peserta</div>
+<h2 id="totalPeserta">0</h2>
+</div>
+
+<div class="stat">
+<div>PAID</div>
+<h2 id="totalPaid">0</h2>
+</div>
+
+<div class="stat">
+<div>RPC DONE</div>
+<h2 id="totalRpc">0</h2>
+</div>
+
+<div class="stat">
+<div>CHECK-IN DONE</div>
+<h2 id="totalCheckin">0</h2>
+</div>
+
+</div>
+
+<div class="card">
 
 <div class="search-box">
 
 <input
 type="text"
-id="search"
-placeholder="Cari nama / register ID / BIB..."
+id="searchInput"
+placeholder="Cari nama / register ID..."
 onkeyup="filterPeserta()">
 
 </div>
 
-</div>
-
-<div class="table-wrap">
-
-<div class="loading" id="loading">
-⏳ Loading data peserta...
-</div>
-
-<table id="pesertaTable" style="display:none;">
+<table>
 
 <thead>
 
 <tr>
 
 <th>Register ID</th>
-<th>BIB</th>
 <th>Nama</th>
 <th>Kategori</th>
-<th>WhatsApp</th>
-
+<th>WA</th>
 <th>Payment</th>
 <th>RPC</th>
-<th>Check-in</th>
-
+<th>Check-In</th>
 <th>Aksi</th>
 
 </tr>
 
 </thead>
 
-<tbody id="tbody"></tbody>
+<tbody id="tableBody">
+
+</tbody>
 
 </table>
+
+</div>
+
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+
+<div class="loading-box">
+
+<div class="spinner"></div>
+
+<div class="loading-text">
+Memproses data...
+</div>
 
 </div>
 
@@ -224,17 +332,37 @@ onkeyup="filterPeserta()">
 const WEBAPP_URL =
 "https://script.google.com/macros/s/AKfycbwr5NReGwYtYWt7hvx4Kw_LwAEZ2d0hVj3WGUPxfYzDXfFO8tno8w-PBO026at7ZNAcaw/exec";
 
-// ======================================
-// DATA GLOBAL
-// ======================================
-
 let pesertaData = [];
 
 // ======================================
-// LOAD PESERTA
+// SHOW LOADING
+// ======================================
+
+function showLoading(){
+
+document.getElementById("loading")
+.style.display = "flex";
+
+}
+
+// ======================================
+// HIDE LOADING
+// ======================================
+
+function hideLoading(){
+
+document.getElementById("loading")
+.style.display = "none";
+
+}
+
+// ======================================
+// LOAD DATA PESERTA
 // ======================================
 
 async function loadPeserta(){
+
+showLoading();
 
 try{
 
@@ -247,28 +375,57 @@ headers:{
 },
 
 body:JSON.stringify({
+
 action:"getAllPeserta"
+
 })
 
 });
 
 pesertaData = await response.json();
 
-document.getElementById("loading")
-.style.display = "none";
-
-document.getElementById("pesertaTable")
-.style.display = "table";
-
 renderTable(pesertaData);
+
+updateStatistik();
+
+hideLoading();
 
 }catch(err){
 
-alert("ERROR : " + err.message);
+hideLoading();
 
-console.log(err);
+alert(err.message);
 
 }
+
+}
+
+// ======================================
+// UPDATE STATISTIK
+// ======================================
+
+function updateStatistik(){
+
+document.getElementById("totalPeserta")
+.innerText = pesertaData.length;
+
+document.getElementById("totalPaid")
+.innerText =
+pesertaData.filter(
+x => x["Payment Status"] == "PAID"
+).length;
+
+document.getElementById("totalRpc")
+.innerText =
+pesertaData.filter(
+x => x["RPC Status"] == "DONE"
+).length;
+
+document.getElementById("totalCheckin")
+.innerText =
+pesertaData.filter(
+x => x["Check-In Status"] == "DONE"
+).length;
 
 }
 
@@ -279,54 +436,26 @@ console.log(err);
 function renderTable(data){
 
 const tbody =
-document.getElementById("tbody");
+document.getElementById("tableBody");
 
 tbody.innerHTML = "";
 
-data.reverse().forEach(item=>{
+data.reverse().forEach(item => {
 
-// ======================================
-// FORMAT WA
-// ======================================
-
-let wa =
+const wa =
 String(item["Nomor WA"] || "");
 
-wa = wa.replace(/\s/g,'');
+let nomorWA = wa;
 
-if(wa.startsWith("0")){
-wa = "62" + wa.substring(1);
+if(nomorWA.startsWith("0")){
+nomorWA = "62" + nomorWA.substring(1);
 }
 
-// ======================================
-// STATUS STYLE
-// ======================================
-
-const paymentClass =
-item["Payment Status"] === "PAID"
-? "paid"
-: "pending";
-
-const rpcClass =
-item["RPC Status"] === "DONE"
-? "done"
-: "pending";
-
-const checkinClass =
-item["Check-In Status"] === "DONE"
-? "done"
-: "pending";
-
-// ======================================
-// PESAN WA
-// ======================================
-
-const waText =
-encodeURIComponent(
+const waText = encodeURIComponent(
 
 `Halo ${item["Nama Lengkap"]},
 
-Pembayaran RUN FOR YOUR LIFE 2026 telah tervalidasi ✅
+Pembayaran RUN FOR YOUR LIFE 2026 telah kami validasi ✅
 
 Register ID :
 ${item["Register ID"]}
@@ -338,120 +467,106 @@ Terima kasih 🙏`
 
 );
 
-// ======================================
-// TABLE ROW
-// ======================================
-
 tbody.innerHTML += `
 
 <tr>
 
-<td>
-${item["Register ID"] || "-"}
-</td>
+<td>${item["Register ID"]}</td>
 
 <td>
-${item["BIB Number"] || "-"}
+${item["Nama Lengkap"]}<br>
+<small>${item["BIB Number"]}</small>
 </td>
 
-<td class="nama">
-${item["Nama Lengkap"] || "-"}
-</td>
+<td>${item["Kategori"]}</td>
 
-<td>
-${item["Kategori"] || "-"}
-</td>
+<td>${wa}</td>
 
 <td>
 
-<a
-href="https://wa.me/${wa}"
-target="_blank"
-class="btn btn-wa">
+<span class="status ${
+item["Payment Status"] == "PAID"
+? "paid"
+: "pending"
+}">
 
-WhatsApp
+${item["Payment Status"]}
 
-</a>
-
-</td>
-
-<td>
-
-<span class="status ${paymentClass}">
-${item["Payment Status"] || "PENDING"}
 </span>
 
-<br>
+</td>
+
+<td>
+
+<span class="status ${
+item["RPC Status"] == "DONE"
+? "done"
+: "pending"
+}">
+
+${item["RPC Status"]}
+
+</span>
+
+</td>
+
+<td>
+
+<span class="status ${
+item["Check-In Status"] == "DONE"
+? "done"
+: "pending"
+}">
+
+${item["Check-In Status"]}
+
+</span>
+
+</td>
+
+<td>
 
 <button
 class="btn btn-paid"
-onclick="
-updateStatus(
+onclick="updateStatus(
 '${item["Register ID"]}',
 'Payment Status',
 'PAID'
 )">
-
-VALIDASI
-
+VALIDASI BAYAR
 </button>
-
-</td>
-
-<td>
-
-<span class="status ${rpcClass}">
-${item["RPC Status"] || "PENDING"}
-</span>
-
-<br>
 
 <button
 class="btn btn-rpc"
-onclick="
-updateStatus(
+onclick="updateStatus(
 '${item["Register ID"]}',
 'RPC Status',
 'DONE'
 )">
-
-DONE
-
+RPC DONE
 </button>
-
-</td>
-
-<td>
-
-<span class="status ${checkinClass}">
-${item["Check-In Status"] || "PENDING"}
-</span>
-
-<br>
 
 <button
 class="btn btn-checkin"
-onclick="
-updateStatus(
+onclick="updateStatus(
 '${item["Register ID"]}',
 'Check-In Status',
 'DONE'
 )">
-
 CHECK-IN
-
 </button>
 
-</td>
-
-<td>
-
 <a
-href="https://wa.me/${wa}?text=${waText}"
+href="https://wa.me/${nomorWA}?text=${waText}"
 target="_blank"
-class="btn btn-wa">
+style="text-decoration:none;"
+>
 
-Kirim WA
+<button class="btn btn-wa">
+
+KIRIM WA
+
+</button>
 
 </a>
 
@@ -475,9 +590,11 @@ field,
 value
 ){
 
+showLoading();
+
 try{
 
-await fetch(WEBAPP_URL,{
+const response = await fetch(WEBAPP_URL,{
 
 method:"POST",
 
@@ -499,49 +616,58 @@ value:value
 
 });
 
-loadPeserta();
+const res =
+await response.json();
+
+hideLoading();
+
+if(res.status == "success"){
+
+await loadPeserta();
+
+}else{
+
+alert("Gagal update status");
+
+}
 
 }catch(err){
 
-alert("ERROR : " + err.message);
+hideLoading();
 
-console.log(err);
+alert(err.message);
 
 }
 
 }
 
 // ======================================
-// FILTER PESERTA
+// FILTER SEARCH
 // ======================================
 
 function filterPeserta(){
 
 const keyword =
-document.getElementById("search")
+document.getElementById("searchInput")
 .value
 .toLowerCase();
 
 const filtered =
-pesertaData.filter(item =>
+pesertaData.filter(item => {
 
-String(item["Nama Lengkap"] || "")
+return (
+String(item["Nama Lengkap"])
 .toLowerCase()
 .includes(keyword)
 
 ||
 
-String(item["Register ID"] || "")
+String(item["Register ID"])
 .toLowerCase()
 .includes(keyword)
-
-||
-
-String(item["BIB Number"] || "")
-.toLowerCase()
-.includes(keyword)
-
 );
+
+});
 
 renderTable(filtered);
 
