@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ADMIN DASHBOARD RFYL26</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:#06152d;
+padding:20px;
+color:white;
+}
+
+.container{
+max-width:1400px;
+margin:auto;
+}
+
+.header{
+background:#0d2347;
+padding:25px;
+border-radius:24px;
+margin-bottom:25px;
+}
+
+.header h1{
+color:#f6c453;
+margin-bottom:10px;
+}
+
+.search-box{
+margin-top:20px;
+}
+
+.search-box input{
+width:100%;
+padding:16px;
+border:none;
+border-radius:14px;
+background:#132f5e;
+color:white;
+font-size:16px;
+}
+
+.table-wrap{
+overflow:auto;
+background:#0d2347;
+border-radius:24px;
+padding:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:1200px;
+}
+
+th{
+background:#132f5e;
+padding:14px;
+text-align:left;
+color:#f6c453;
+font-size:14px;
+}
+
+td{
+padding:14px;
+border-bottom:1px solid rgba(255,255,255,0.08);
+font-size:14px;
+vertical-align:middle;
+}
+
+.status{
+padding:8px 12px;
+border-radius:10px;
+font-size:13px;
+font-weight:700;
+display:inline-block;
+}
+
+.paid{
+background:#10391e;
+color:#6effa7;
+}
+
+.pending{
+background:#4d3908;
+color:#ffcc66;
+}
+
+.done{
+background:#10391e;
+color:#6effa7;
+}
+
+.btn{
+border:none;
+padding:10px 14px;
+border-radius:10px;
+cursor:pointer;
+font-weight:700;
+margin:3px;
+}
+
+.btn-paid{
+background:#6effa7;
+color:#06152d;
+}
+
+.btn-rpc{
+background:#6ec6ff;
+color:#06152d;
+}
+
+.btn-checkin{
+background:#f6c453;
+color:#06152d;
+}
+
+.btn-wa{
+background:#25D366;
+color:white;
+text-decoration:none;
+display:inline-block;
+}
+
+.loading{
+text-align:center;
+padding:40px;
+color:#f6c453;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<h1>
+🏃 ADMIN DASHBOARD RFYL26
+</h1>
+
+<p>
+Monitoring peserta, validasi pembayaran,
+RPC, dan Check-in
+</p>
+
+<div class="search-box">
+
+<input
+type="text"
+id="search"
+placeholder="Cari nama / register ID / BIB..."
+onkeyup="filterPeserta()">
+
+</div>
+
+</div>
+
+<div class="table-wrap">
+
+<div class="loading" id="loading">
+⏳ Loading data peserta...
+</div>
+
+<table id="pesertaTable" style="display:none;">
+
+<thead>
+
+<tr>
+
+<th>Register ID</th>
+<th>BIB</th>
+<th>Nama</th>
+<th>Kategori</th>
+<th>WA</th>
+
+<th>Payment</th>
+<th>RPC</th>
+<th>Check-in</th>
+
+<th>Aksi</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+// ======================================
+// WEB APP URL
+// ======================================
+
+const WEBAPP_URL =
+"https://script.google.com/macros/s/AKfycbwr5NReGwYtYWt7hvx4Kw_LwAEZ2d0hVj3WGUPxfYzDXfFO8tno8w-PBO026at7ZNAcaw/exec";
+
+let pesertaData = [];
+
+// ======================================
+// LOAD DATA
+// ======================================
+
+async function loadPeserta(){
+
+try{
+
+const response = await fetch(WEBAPP_URL,{
+
+method:"POST",
+
+headers:{
+"Content-Type":"text/plain"
+},
+
+body:JSON.stringify({
+action:"getAllPeserta"
+})
+
+});
+
+pesertaData = await response.json();
+
+document.getElementById("loading")
+.style.display = "none";
+
+document.getElementById("pesertaTable")
+.style.display = "table";
+
+renderTable(pesertaData);
+
+}catch(err){
+
+alert(err.message);
+
+}
+
+}
+
+// ======================================
+// RENDER TABLE
+// ======================================
+
+function renderTable(data){
+
+const tbody =
+document.getElementById("tbody");
+
+tbody.innerHTML = "";
+
+data.reverse().forEach(item=>{
+
+let wa = item["Nomor WA"] || "";
+
+if(wa.startsWith("0")){
+wa = "62" + wa.substring(1);
+}
+
+tbody.innerHTML += `
+
+<tr>
+
+<td>${item["Register ID"]}</td>
+
+<td>${item["BIB Number"]}</td>
+
+<td>${item["Nama Lengkap"]}</td>
+
+<td>${item["Kategori"]}</td>
+
+<td>
+<a
+href="https://wa.me/${wa}"
+target="_blank"
+class="btn btn-wa">
+WhatsApp
+</a>
+</td>
+
+<td>
+
+<span class="status ${
+item["Payment Status"] == "PAID"
+? "paid"
+: "pending"
+}">
+${item["Payment Status"]}
+</span>
+
+<br>
+
+<button
+class="btn btn-paid"
+onclick="
+updateStatus(
+'${item["Register ID"]}',
+'Payment Status',
+'PAID'
+)">
+VALIDASI
+</button>
+
+</td>
+
+<td>
+
+<span class="status ${
+item["RPC Status"] == "DONE"
+? "done"
+: "pending"
+}">
+${item["RPC Status"]}
+</span>
+
+<br>
+
+<button
+class="btn btn-rpc"
+onclick="
+updateStatus(
+'${item["Register ID"]}',
+'RPC Status',
+'DONE'
+)">
+DONE
+</button>
+
+</td>
+
+<td>
+
+<span class="status ${
+item["Check-In Status"] == "DONE"
+? "done"
+: "pending"
+}">
+${item["Check-In Status"]}
+</span>
+
+<br>
+
+<button
+class="btn btn-checkin"
+onclick="
+updateStatus(
+'${item["Register ID"]}',
+'Check-In Status',
+'DONE'
+)">
+CHECK-IN
+</button>
+
+</td>
+
+<td>
+
+<a
+href="https://wa.me/${wa}?text=${encodeURIComponent(
+`Halo ${item["Nama Lengkap"]},
+
+Pembayaran RUN FOR YOUR LIFE 2026 telah tervalidasi ✅
+
+Register ID:
+${item["Register ID"]}
+
+Terima kasih 🙏`
+)}"
+target="_blank"
+class="btn btn-wa">
+
+Kirim WA
+
+</a>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+// ======================================
+// UPDATE STATUS
+// ======================================
+
+async function updateStatus(
+registerId,
+field,
+value
+){
+
+try{
+
+await fetch(WEBAPP_URL,{
+
+method:"POST",
+
+headers:{
+"Content-Type":"text/plain"
+},
+
+body:JSON.stringify({
+
+action:"updateStatus",
+
+registerId:registerId,
+
+field:field,
+
+value:value
+
+})
+
+});
+
+loadPeserta();
+
+}catch(err){
+
+alert(err.message);
+
+}
+
+}
+
+// ======================================
+// FILTER
+// ======================================
+
+function filterPeserta(){
+
+const keyword =
+document.getElementById("search")
+.value
+.toLowerCase();
+
+const filtered =
+pesertaData.filter(item =>
+
+(item["Nama Lengkap"] || "")
+.toLowerCase()
+.includes(keyword)
+
+||
+
+(item["Register ID"] || "")
+.toLowerCase()
+.includes(keyword)
+
+||
+
+(item["BIB Number"] || "")
+.toLowerCase()
+.includes(keyword)
+
+);
+
+renderTable(filtered);
+
+}
+
+// ======================================
+// START
+// ======================================
+
+loadPeserta();
+
+</script>
+
+</body>
+</html>
